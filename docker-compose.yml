@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - ./mongo-db:/data/db
+  mongo_express:
+    image: mongo-express:1.0.2-20-alpine3.19
+    container_name: mongo_express
+    environment:
+      - ME_CONFIG_BASICAUTH_USERNAME=root
+      - ME_CONFIG_BASICAUTH_PASSWORD=root
+    depends_on:
+      - mongo
+    ports:
+      - 8081:8081
+
+  api:
+    container_name: api
+    build: .
+    ports:
+      - 3000:3000
+    volumes:
+      - ../api:/api:cached
+    environment:
+      PORT: "3000"
+    depends_on:
+      - mongo
+
