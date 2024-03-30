@@ -9,6 +9,8 @@ import (
 
 type Registry interface {
 	InsertUser(ctx context.Context, user *model.User) error
+	GetUser(ctx context.Context, email string) (model.User, error)
+	UpdateUser(ctx context.Context, user *model.User) error
 }
 
 type impl struct {
