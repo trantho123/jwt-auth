@@ -8,6 +8,9 @@ import (
 	"fmt"
 	"os"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (i impl) SighUp(signUpInput *model.SignUpInput) error {
@@ -23,9 +26,13 @@ func (i impl) SighUp(signUpInput *model.SignUpInput) error {
 		Verified:         false,
 		CreatedAt:        time.Now(),
 	}
-
+	// Is username exist in db
+	isUserNameExist, _ := i.repo.GetUser(context.Background(), bson.M{"username": newUser.Username})
+	if isUserNameExist.Username != "" {
+		return fmt.Errorf("username '%s' already exists", newUser.Username)
+	}
 	// Is email exist in db
-	isEmailExists, _ := i.repo.GetUserByEmail(context.Background(), newUser.Email)
+	isEmailExists, _ := i.repo.GetUser(context.Background(), bson.M{"email": newUser.Email})
 	if isEmailExists.Email != "" {
 		if !isEmailExists.Verified {
 			return errors.New("please verify your email")
@@ -40,15 +47,19 @@ func (i impl) SighUp(signUpInput *model.SignUpInput) error {
 		}
 	}
 	// send email
-	user, getUserErr := i.repo.GetUserByEmail(context.Background(), newUser.Email)
+	user, getUserErr := i.repo.GetUser(context.Background(), bson.M{"email": newUser.Email})
 	if getUserErr != nil {
 		return errors.New("something bad happened")
 	}
 	id := user.ID.Hex()
+	url := fmt.Sprintf("%s/signup/verify/%s/%s", os.Getenv("CLIENT_ORIGIN"), id, newUser.VerificationCode)
 	emailData := utils.EmailData{
-		URL:      fmt.Sprintf("%s/signup/verify/%s/%s", os.Getenv("CLIENT_ORIGIN"), id, newUser.VerificationCode),
-		UserName: newUser.Username,
-		Subject:  "Your account verification code",
+		URL:     url,
+		Subject: "Your account verification code",
+		Content: fmt.Sprintf(`Hello %s,<br/>
+		Thank you for registering with us!<br/>
+		Please <a href="%s">click here</a> to verify your email address.<br/>
+		`, newUser.Username, url),
 	}
 	sendEmailErr := utils.SendEmail(&user, &emailData)
 	if sendEmailErr != nil {
@@ -58,7 +69,8 @@ func (i impl) SighUp(signUpInput *model.SignUpInput) error {
 }
 
 func (i impl) SignUpVerifyEmail(id, code string) error {
-	user, getUserErr := i.repo.GetUserByID(context.Background(), id)
+	objId, _ := primitive.ObjectIDFromHex(id)
+	user, getUserErr := i.repo.GetUser(context.Background(), bson.M{"_id": objId})
 	if getUserErr != nil {
 		return errors.New("something bad happened")
 	}

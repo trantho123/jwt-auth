@@ -9,14 +9,15 @@ import (
 type Controller interface {
 	SighUp(user *model.SignUpInput) error
 	SignUpVerifyEmail(id, code string) error
+	Login(loginInput *model.LoginInput) error
 }
 type impl struct {
-	rds  rds.RedisService
-	repo repository.Registry
+	redis rds.RedisService
+	repo  repository.Registry
 }
 
 func New(repo repository.Registry, rds rds.RedisService) Controller {
 	return impl{
-		repo: repo,
-		rds:  rds}
+		repo:  repo,
+		redis: rds}
 }

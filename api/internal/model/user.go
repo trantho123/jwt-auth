@@ -22,7 +22,12 @@ type SignUpInput struct {
 	Password string `json:"password"`
 }
 
-type VerifyEmail struct {
+type VerifyOTP struct {
 	Email   string `json:"email"`
 	OTPCode string `json:"otpcode"`
+}
+
+type LoginInput struct {
+	UserName string `json:"username"`
+	Password string `json:"password"`
 }
