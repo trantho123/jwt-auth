@@ -7,7 +7,6 @@ import (
 	"Jwtwithecdsa/api/internal/rds"
 	"Jwtwithecdsa/api/internal/repository"
 	"context"
-	"fmt"
 	"log"
 	"os"
 
@@ -52,24 +51,15 @@ func ConnectToDatabase() (*mongo.Collection, error) {
 }
 
 func ConnectRedis() (*redis.Client, error) {
-	// Tạo một đối tượng redis.Client để kết nối đến máy chủ Redis
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "cache:6379",
-		Password: "", // Đặt mật khẩu của Redis (nếu cần)
-		DB:       0,  // Chọn cơ sở dữ liệu (mặc định là 0)
+		Addr:     "cache:" + os.Getenv("REDIS_SERVER"),
+		Password: "",
+		DB:       0,
 	})
-
-	// Kiểm tra kết nối đến Redis
 	_, err := rdb.Ping(context.TODO()).Result()
 	if err != nil {
-		// Nếu có lỗi, trả về nil và lỗi tương ứng
 		return nil, err
 	}
-
-	// In ra "PONG" để xác nhận kết nối thành công
-	fmt.Println("Kết nối đến Redis thành công")
-
-	// Trả về đối tượng redis.Client và không có lỗi
 	return rdb, nil
 }
 func LoadEnv() {

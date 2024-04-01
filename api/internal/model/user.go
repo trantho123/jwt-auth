@@ -7,12 +7,13 @@ import (
 )
 
 type User struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty"`
-	Email     string             `bson:"email"`
-	Username  string             `bson:"username"`
-	Password  string             `bson:"password"`
-	Verified  bool               `bson:"verified"`
-	CreatedAt time.Time          `bson:"createdat"`
+	ID               primitive.ObjectID `bson:"_id,omitempty"`
+	Email            string             `bson:"email"`
+	Username         string             `bson:"username"`
+	Password         string             `bson:"password"`
+	VerificationCode string
+	Verified         bool      `bson:"verified"`
+	CreatedAt        time.Time `bson:"createdat"`
 }
 
 type SignUpInput struct {

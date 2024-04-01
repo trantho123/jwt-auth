@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -19,7 +20,7 @@ func (i impl) InsertUser(ctx context.Context, user *model.User) error {
 	return nil
 }
 
-func (i impl) GetUser(ctx context.Context, email string) (model.User, error) {
+func (i impl) GetUserByEmail(ctx context.Context, email string) (model.User, error) {
 	var user model.User
 	err := i.mongoColl.FindOne(ctx, bson.M{"email": email}).Decode(&user)
 	if err != nil {
@@ -42,4 +43,17 @@ func (i impl) UpdateUser(ctx context.Context, user *model.User) error {
 	}
 
 	return nil
+}
+
+func (i impl) GetUserByID(ctx context.Context, id string) (model.User, error) {
+	userID, _ := primitive.ObjectIDFromHex(id)
+	var user model.User
+	err := i.mongoColl.FindOne(ctx, bson.M{"_id": userID}).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return model.User{}, fmt.Errorf("user not found")
+		}
+		return model.User{}, err
+	}
+	return user, nil
 }

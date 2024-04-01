@@ -10,7 +10,6 @@ import (
 type RedisService interface {
 	SetOTP(ctx context.Context, email string, otp string, expiry time.Duration) error
 	CompareOTP(ctx context.Context, email string, otp string) (bool, error)
-	DelOTP(ctx context.Context, key string) error
 }
 type rds struct {
 	client *redis.Client
@@ -40,12 +39,4 @@ func (r *rds) CompareOTP(ctx context.Context, email string, otp string) (bool, e
 		return false, nil
 	}
 	return true, nil
-}
-
-func (r *rds) DelOTP(ctx context.Context, key string) error {
-	err := r.client.Del(ctx, key).Err()
-	if err != nil {
-		return err
-	}
-	return nil
 }

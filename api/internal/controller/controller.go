@@ -8,7 +8,7 @@ import (
 
 type Controller interface {
 	SighUp(user *model.SignUpInput) error
-	SignUpVerifyEmail(verify *model.VerifyEmail) error
+	SignUpVerifyEmail(id, code string) error
 }
 type impl struct {
 	rds  rds.RedisService

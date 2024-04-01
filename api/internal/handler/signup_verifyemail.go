@@ -1,20 +1,14 @@
 package handler
 
 import (
-	"Jwtwithecdsa/api/internal/model"
-
 	"github.com/gofiber/fiber/v2"
 )
 
 func (h Handler) SignUpVerifyEmail() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		var verify model.VerifyEmail
-		if err := ctx.BodyParser(&verify); err != nil {
-			return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "Invalid request payload",
-			})
-		}
-		err := h.ctrl.SignUpVerifyEmail(&verify)
+		id := ctx.Params("id")
+		code := ctx.Params("code")
+		err := h.ctrl.SignUpVerifyEmail(id, code)
 		if err != nil {
 			return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": err.Error(),
@@ -22,6 +16,7 @@ func (h Handler) SignUpVerifyEmail() fiber.Handler {
 		}
 		return ctx.JSON(fiber.Map{
 			"success": true,
+			"Message": "Email verified successfully",
 		})
 	}
 }

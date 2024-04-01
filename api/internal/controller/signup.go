@@ -5,6 +5,8 @@ import (
 	"Jwtwithecdsa/api/internal/utils"
 	"context"
 	"errors"
+	"fmt"
+	"os"
 	"time"
 )
 
@@ -14,25 +16,19 @@ func (i impl) SighUp(signUpInput *model.SignUpInput) error {
 		return err
 	}
 	newUser := model.User{
-		Email:     signUpInput.Email,
-		Username:  signUpInput.UserName,
-		Password:  hashedPassword,
-		Verified:  false,
-		CreatedAt: time.Now(),
+		Email:            signUpInput.Email,
+		Username:         signUpInput.UserName,
+		Password:         hashedPassword,
+		VerificationCode: utils.RandomString(30),
+		Verified:         false,
+		CreatedAt:        time.Now(),
 	}
-	// Generate otp
-	newOTP, newOTPErr := utils.GetRandNum()
-	if newOTPErr != nil {
-		return errors.New("failed to gen otp email: " + newOTPErr.Error())
-	}
+
 	// Is email exist in db
-	isEmailExists, _ := i.repo.GetUser(context.Background(), newUser.Email)
+	isEmailExists, _ := i.repo.GetUserByEmail(context.Background(), newUser.Email)
 	if isEmailExists.Email != "" {
 		if !isEmailExists.Verified {
-			sendEmailErr := utils.SendEmail(newUser.Email, "Confirm OTP", newOTP)
-			if sendEmailErr != nil {
-				return errors.New("failed to send email: " + sendEmailErr.Error())
-			}
+			return errors.New("please verify your email")
 		} else {
 			return errors.New("user with that email already exists")
 		}
@@ -40,44 +36,43 @@ func (i impl) SighUp(signUpInput *model.SignUpInput) error {
 		// Insert user
 		insertErr := i.repo.InsertUser(context.Background(), &newUser)
 		if insertErr != nil {
-			return errors.New("failed to insert user: " + insertErr.Error())
+			return errors.New("failed to insert user")
 		}
 	}
-	// save in redis
-	cacheErr := i.rds.SetOTP(context.Background(), newUser.Email, newOTP, 5*time.Minute)
-	if cacheErr != nil {
-		return cacheErr
-	}
 	// send email
-	sendEmailErr := utils.SendEmail(newUser.Email, "Confirm OTP", newOTP)
+	user, getUserErr := i.repo.GetUserByEmail(context.Background(), newUser.Email)
+	if getUserErr != nil {
+		return errors.New("something bad happened")
+	}
+	id := user.ID.Hex()
+	emailData := utils.EmailData{
+		URL:      fmt.Sprintf("%s/signup/verify/%s/%s", os.Getenv("CLIENT_ORIGIN"), id, newUser.VerificationCode),
+		UserName: newUser.Username,
+		Subject:  "Your account verification code",
+	}
+	sendEmailErr := utils.SendEmail(&user, &emailData)
 	if sendEmailErr != nil {
-		return errors.New("failed to send email: " + sendEmailErr.Error())
+		return errors.New("failed to send email")
 	}
 	return nil
 }
 
-func (i impl) SignUpVerifyEmail(verify *model.VerifyEmail) error {
-	// Compare OTP
-	isSameOtp, err := i.rds.CompareOTP(context.Background(), verify.Email, verify.OTPCode)
-	if err != nil {
-		return err
-	}
-	if !isSameOtp {
-		return errors.New("invalid verification code")
-	}
-	// Get User in mongodb
-	user, getUserErr := i.repo.GetUser(context.Background(), verify.Email)
+func (i impl) SignUpVerifyEmail(id, code string) error {
+	user, getUserErr := i.repo.GetUserByID(context.Background(), id)
 	if getUserErr != nil {
 		return errors.New("something bad happened")
 	}
-	// Update veridied
-	if user.Verified {
+	if !user.Verified {
+		if user.VerificationCode == code {
+			user.VerificationCode = ""
+		}
+	} else {
 		return errors.New("this email has been confirmed")
 	}
 	user.Verified = true
 	UpdateUserErr := i.repo.UpdateUser(context.Background(), &user)
 	if UpdateUserErr != nil {
-		return err
+		return errors.New("something bad happened")
 	}
 	return nil
 }
