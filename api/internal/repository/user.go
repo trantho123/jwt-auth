@@ -35,7 +35,12 @@ func (i impl) GetUserByEmail(ctx context.Context, email string) (model.User, err
 func (i impl) UpdateUser(ctx context.Context, user *model.User) error {
 	filter := bson.M{"_id": user.ID}
 	update := bson.M{"$set": bson.M{
-		"verified": user.Verified,
+		"email":            user.Email,
+		"username":         user.Username,
+		"password":         user.Password,
+		"verificationcode": user.VerificationCode,
+		"verified":         user.Verified,
+		"createdat":        user.CreatedAt,
 	}}
 	_, err := i.mongoColl.UpdateOne(ctx, filter, update)
 	if err != nil {
