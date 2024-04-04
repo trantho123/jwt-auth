@@ -10,6 +10,7 @@ type Controller interface {
 	SighUp(user *model.SignUpInput) error
 	SignUpVerifyEmail(id, code string) error
 	Login(loginInput *model.LoginInput) error
+	LoginVerify(verifyOTP *model.VerifyOTP) (model.LoginResponse, error)
 }
 type impl struct {
 	redis rds.RedisService

@@ -8,8 +8,9 @@ import (
 )
 
 type RedisService interface {
-	SetOTP(ctx context.Context, key string, otp string, expiry time.Duration) error
-	CompareOTP(ctx context.Context, key string, otp string) (bool, error)
+	Set(ctx context.Context, key string, otp string, expiry time.Duration) error
+	Compare(ctx context.Context, key string, otp string) (bool, error)
+	Del(ctx context.Context, key string) error
 }
 type rds struct {
 	client *redis.Client
@@ -21,14 +22,14 @@ func New(client *redis.Client) RedisService {
 	}
 }
 
-func (r *rds) SetOTP(ctx context.Context, key string, otp string, expiry time.Duration) error {
+func (r *rds) Set(ctx context.Context, key string, otp string, expiry time.Duration) error {
 	err := r.client.Set(ctx, key, otp, expiry).Err()
 	if err != nil {
 		return err
 	}
 	return nil
 }
-func (r *rds) CompareOTP(ctx context.Context, key string, otp string) (bool, error) {
+func (r *rds) Compare(ctx context.Context, key string, otp string) (bool, error) {
 	o, err := r.client.Get(ctx, key).Result()
 	if err == redis.Nil {
 		return false, err
@@ -39,4 +40,12 @@ func (r *rds) CompareOTP(ctx context.Context, key string, otp string) (bool, err
 		return false, nil
 	}
 	return true, nil
+}
+
+func (r *rds) Del(ctx context.Context, key string) error {
+	err := r.client.Del(ctx, key).Err()
+	if err != nil {
+		return err
+	}
+	return nil
 }

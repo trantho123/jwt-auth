@@ -12,23 +12,27 @@ import (
 )
 
 func (i impl) Login(loginInput *model.LoginInput) error {
+	// Is user exist
 	filter := bson.M{"username": loginInput.UserName}
 	user, err := i.repo.GetUser(context.Background(), filter)
 	if err != nil {
 		return errors.New("user not found")
 	}
+	// verify pass
 	if err := utils.VerifyPassword(user.Password, loginInput.Password); err != nil {
 		return errors.New("wrong password")
 	}
 	if !user.Verified {
 		return errors.New("account not verified")
 	}
+	// random otp
 	key := user.ID.Hex()
 	otp, _ := utils.GetRandNum()
-	setOTPErr := i.redis.SetOTP(context.Background(), key, otp, 5*time.Minute)
+	setOTPErr := i.redis.Set(context.Background(), key, otp, 5*time.Minute)
 	if setOTPErr != nil {
 		return errors.New("something bad happened")
 	}
+	// send email
 	emailData := utils.EmailData{
 		Subject: "Your OTP for login",
 		Content: fmt.Sprintf("Your OTP is:%s", otp),
@@ -38,4 +42,39 @@ func (i impl) Login(loginInput *model.LoginInput) error {
 		return errors.New("failed to send email")
 	}
 	return nil
+}
+
+func (i impl) LoginVerify(verifyOTP *model.VerifyOTP) (model.LoginResponse, error) {
+	// is email exist
+	filter := bson.M{"email": verifyOTP.Email}
+	user, err := i.repo.GetUser(context.Background(), filter)
+	if err != nil {
+		return model.LoginResponse{}, errors.New("user not found")
+	}
+	// compare otp in redis
+	isOTPSame, compareOtpErr := i.redis.Compare(context.Background(), user.ID.Hex(), verifyOTP.OTPCode)
+	if compareOtpErr != nil {
+		return model.LoginResponse{}, errors.New("something bad happened")
+	}
+	if !isOTPSame {
+		return model.LoginResponse{}, errors.New("invalid OTP")
+	}
+	// create token
+	accessTokenStr, err := utils.GenerateToken(user.ID.Hex(), 15)
+	if err != nil {
+		return model.LoginResponse{}, fmt.Errorf("accesstoken : %s", err)
+	}
+	refreshTokenStr, err := utils.GenerateToken(user.ID.Hex(), 60)
+	if err != nil {
+		return model.LoginResponse{}, fmt.Errorf("refreshtoken :%s", err)
+	}
+	if err := i.redis.Set(context.Background(), refreshTokenStr, user.ID.Hex(), 60*time.Minute); err != nil {
+		fmt.Sprintln("set otp :", err)
+		return model.LoginResponse{}, fmt.Errorf("setotp :%s", err)
+	}
+	res := model.LoginResponse{
+		AccessToken:  accessTokenStr,
+		RefreshToken: refreshTokenStr,
+	}
+	return res, nil
 }
