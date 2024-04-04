@@ -11,6 +11,7 @@ type Controller interface {
 	SignUpVerifyEmail(id, code string) error
 	Login(loginInput *model.LoginInput) error
 	LoginVerify(verifyOTP *model.VerifyOTP) (model.LoginResponse, error)
+	RefreshAccessToken(refreshtoken string) (model.LoginResponse, error)
 }
 type impl struct {
 	redis rds.RedisService

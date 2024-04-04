@@ -28,8 +28,8 @@ func GenerateToken(userId string, ttl time.Duration) (string, error) {
 	return tokenString, nil
 }
 
-func VerifyToken(tokenString string, publicSecretKey string) (*jwt.Token, error) {
-	publicKey, err := ConvertBase64PEMToPublicKey(publicSecretKey)
+func VerifyToken(tokenString string) (*jwt.Token, error) {
+	publicKey, err := ConvertBase64PEMToPublicKey(os.Getenv("PUBLIC_KEY"))
 	if err != nil {
 		return nil, err
 	}
