@@ -4,6 +4,7 @@ go 1.21.6
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.2
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.5.1
 	go.mongodb.org/mongo-driver v1.14.0

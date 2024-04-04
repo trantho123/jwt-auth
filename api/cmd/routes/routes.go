@@ -14,4 +14,5 @@ func (r Route) Routes(rtr *fiber.App) {
 	rtr.Post("/signup", r.h.SignUp())
 	rtr.Get("/signup/verify/:id/:code", r.h.SignUpVerifyEmail())
 	rtr.Post("/login", r.h.Login())
+	rtr.Post("/login/verify", r.h.LoginVerify())
 }

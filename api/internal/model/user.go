@@ -31,3 +31,8 @@ type LoginInput struct {
 	UserName string `json:"username"`
 	Password string `json:"password"`
 }
+
+type LoginResponse struct {
+	AccessToken  string
+	RefreshToken string
+}
