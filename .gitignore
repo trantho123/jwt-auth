@@ -1,0 +1,4 @@
+# volume data redis
+cache/
+# volum data mongodb
+mongo-db/

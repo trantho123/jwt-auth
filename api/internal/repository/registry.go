@@ -4,11 +4,14 @@ import (
 	"Jwtwithecdsa/api/internal/model"
 	"context"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Registry interface {
 	InsertUser(ctx context.Context, user *model.User) error
+	GetUser(ctx context.Context, filter bson.M) (model.User, error)
+	UpdateUser(ctx context.Context, user *model.User) error
 }
 
 type impl struct {
