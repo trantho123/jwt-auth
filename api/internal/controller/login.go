@@ -62,15 +62,15 @@ func (i impl) LoginVerify(verifyOTP *model.VerifyOTP) (model.LoginResponse, erro
 	// create token
 	accessTokenStr, err := utils.GenerateToken(user.ID.Hex(), 15)
 	if err != nil {
-		return model.LoginResponse{}, fmt.Errorf("accesstoken : %s", err)
+		return model.LoginResponse{}, errors.New("something bad happened")
 	}
 	refreshTokenStr, err := utils.GenerateToken(user.ID.Hex(), 60)
 	if err != nil {
-		return model.LoginResponse{}, fmt.Errorf("refreshtoken :%s", err)
+		return model.LoginResponse{}, errors.New("something bad happened")
 	}
 	if err := i.redis.Set(context.Background(), refreshTokenStr, user.ID.Hex(), 60*time.Minute); err != nil {
 		fmt.Sprintln("set otp :", err)
-		return model.LoginResponse{}, fmt.Errorf("setotp :%s", err)
+		return model.LoginResponse{}, errors.New("something bad happened")
 	}
 	res := model.LoginResponse{
 		AccessToken:  accessTokenStr,
