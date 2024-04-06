@@ -23,5 +23,5 @@ docker-compose up
         }
     - http://localhost:3000/refresh
         - JWT Bearer
-    -http://localhost:3000/me
+    - http://localhost:3000/me
         - JWT Bearer
