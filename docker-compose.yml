@@ -9,18 +9,6 @@ services:
       - ./mongo-db:/data/db
     networks:
       - jwt_network
-  mongo_express:
-    image: mongo-express:1.0.2-20-alpine3.19
-    container_name: mongo_express
-    environment:
-      - ME_CONFIG_BASICAUTH_USERNAME=root
-      - ME_CONFIG_BASICAUTH_PASSWORD=root
-    depends_on:
-      - mongo
-    ports:
-      - 8081:8081
-    networks:
-      - jwt_network
   cache:
     image: redis:6.2-alpine
     restart: always
