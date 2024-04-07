@@ -12,6 +12,7 @@ type Controller interface {
 	Login(loginInput *model.LoginInput) error
 	LoginVerify(verifyOTP *model.VerifyOTP) (model.LoginResponse, error)
 	RefreshAccessToken(refreshtoken string) (model.LoginResponse, error)
+	GetMe(userid string) (model.UserResponse, error)
 }
 type impl struct {
 	redis rds.RedisService

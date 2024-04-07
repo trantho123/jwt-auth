@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,6 +18,9 @@ func (i impl) Login(loginInput *model.LoginInput) error {
 	user, err := i.repo.GetUser(context.Background(), filter)
 	if err != nil {
 		return errors.New("user not found")
+	}
+	if !user.Verified {
+		return errors.New("please verify your email address before logging in")
 	}
 	// verify pass
 	if err := utils.VerifyPassword(user.Password, loginInput.Password); err != nil {
@@ -60,11 +64,11 @@ func (i impl) LoginVerify(verifyOTP *model.VerifyOTP) (model.LoginResponse, erro
 		return model.LoginResponse{}, errors.New("invalid OTP")
 	}
 	// create token
-	accessTokenStr, err := utils.GenerateToken(user.ID.Hex(), 15)
+	accessTokenStr, err := utils.GenerateToken(user.ID.Hex(), os.Getenv("PRIVATE_ACCESS_KEY"), 15)
 	if err != nil {
 		return model.LoginResponse{}, errors.New("something bad happened")
 	}
-	refreshTokenStr, err := utils.GenerateToken(user.ID.Hex(), 60)
+	refreshTokenStr, err := utils.GenerateToken(user.ID.Hex(), os.Getenv("PRIVATE_REFRESH_KEY"), 60)
 	if err != nil {
 		return model.LoginResponse{}, errors.New("something bad happened")
 	}

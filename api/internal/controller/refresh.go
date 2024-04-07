@@ -5,11 +5,12 @@ import (
 	"Jwtwithecdsa/api/internal/utils"
 	"context"
 	"errors"
+	"os"
 	"time"
 )
 
 func (i impl) RefreshAccessToken(refreshtoken string) (model.LoginResponse, error) {
-	_, err := utils.VerifyToken(refreshtoken)
+	_, err := utils.VerifyToken(refreshtoken, os.Getenv("PUBLIC_REFRESH_KEY"))
 	if err != nil {
 		return model.LoginResponse{}, err
 	}
@@ -18,11 +19,11 @@ func (i impl) RefreshAccessToken(refreshtoken string) (model.LoginResponse, erro
 		return model.LoginResponse{}, err
 	}
 	// Create new accesstoken and refreshtoken
-	newAccessTokenStr, err := utils.GenerateToken(userid, 15)
+	newAccessTokenStr, err := utils.GenerateToken(userid, os.Getenv("PRIVATE_ACCESS_KEY"), 15)
 	if err != nil {
 		return model.LoginResponse{}, errors.New("cant refresh, please login again")
 	}
-	newRefreshTokenStr, err := utils.GenerateToken(userid, 60)
+	newRefreshTokenStr, err := utils.GenerateToken(userid, os.Getenv("PRIVATE_REFRESH_KEY"), 60)
 	if err != nil {
 		return model.LoginResponse{}, errors.New("cant refresh, please login again")
 	}

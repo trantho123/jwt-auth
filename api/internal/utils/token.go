@@ -5,14 +5,13 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 )
 
-func GenerateToken(userId string, ttl time.Duration) (string, error) {
-	privateK, err := ConvertBase64PEMToPrivateKey(os.Getenv("PRIVATE_KEY"))
+func GenerateToken(userId string, privateKeyStr string, ttl time.Duration) (string, error) {
+	privateK, err := ConvertBase64PEMToPrivateKey(privateKeyStr)
 	if err != nil {
 		return "", err
 	}
@@ -28,8 +27,8 @@ func GenerateToken(userId string, ttl time.Duration) (string, error) {
 	return tokenString, nil
 }
 
-func VerifyToken(tokenString string) (*jwt.Token, error) {
-	publicKey, err := ConvertBase64PEMToPublicKey(os.Getenv("PUBLIC_KEY"))
+func VerifyToken(tokenString string, publicKeyStr string) (*jwt.Token, error) {
+	publicKey, err := ConvertBase64PEMToPublicKey(publicKeyStr)
 	if err != nil {
 		return nil, err
 	}

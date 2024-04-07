@@ -36,3 +36,10 @@ type LoginResponse struct {
 	AccessToken  string
 	RefreshToken string
 }
+
+type UserResponse struct {
+	ID        primitive.ObjectID `json:"id"`
+	Email     string             `json:"email"`
+	Username  string             `json:"username"`
+	CreatedAt time.Time          `json:"createdAt"`
+}
