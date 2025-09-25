@@ -1,27 +1,10 @@
-- Use mailtrap to receive email; link : [mailtrap inboxs](https://mailtrap.io/inboxes)
-- Change SMTP_HOST; SMTP_USER; SMTP_PASS in .env
-- Starting the application : 
-```shell 
-docker-compose up 
-```
-- Example :
-    - http://localhost:3000/signup 
-        {
-            "email":"username@gmail.com",
-            "username":"username",
-            "password":"aaaa"
-        }
-    - http://localhost:3000/login 
-        {
-             "username":"username",
-             "password":"aaaa"
-        }
-    - http://localhost:3000/login/verify
-        {
-             "email":"username@gmail.com",
-             "otpcode":""
-        }
-    - http://localhost:3000/refresh
-        - JWT Bearer
-    - http://localhost:3000/me
-        - JWT Bearer
+# JWT Auth
+
+This project implements authentication using JSON Web Tokens (JWT) in a modern web application. It provides secure user login, token generation, and protected routes to ensure only authenticated users can access certain resources.
+
+## Features
+- User Registration: Register a new user with username and password with confirm email
+- User Login: Authenticate an existing user and receive a JWT.
+- JWT-Based Authentication: Use JWT to protect routes.
+- Protected Routes: Access to certain routes is restricted to authenticated users.
+- Token Validation: Middleware for validating tokens on each request.
