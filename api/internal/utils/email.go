@@ -53,3 +53,7 @@ func RandomString(n int) string {
 
 	return sb.String()
 }
+
+func RandomEmail() string {
+	return RandomString(5) + "@gmail.com"
+}
