@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -41,7 +40,7 @@ func (i impl) Login(loginInput *model.LoginInput) error {
 		Subject: "Your OTP for login",
 		Content: fmt.Sprintf("Your OTP is:%s", otp),
 	}
-	sendEmailErr := utils.SendEmail(&user, &emailData)
+	sendEmailErr := utils.SendEmail(&user, &emailData, i.config)
 	if sendEmailErr != nil {
 		return errors.New("failed to send email")
 	}
@@ -64,16 +63,15 @@ func (i impl) LoginVerify(verifyOTP *model.VerifyOTP) (model.LoginResponse, erro
 		return model.LoginResponse{}, errors.New("invalid OTP")
 	}
 	// create token
-	accessTokenStr, err := utils.GenerateToken(user.ID.Hex(), os.Getenv("PRIVATE_ACCESS_KEY"), 15)
+	accessTokenStr, err := utils.GenerateToken(user.ID.Hex(), i.config.PRIVATE_ACCESS_KEY, 15)
 	if err != nil {
 		return model.LoginResponse{}, errors.New("something bad happened")
 	}
-	refreshTokenStr, err := utils.GenerateToken(user.ID.Hex(), os.Getenv("PRIVATE_REFRESH_KEY"), 60)
+	refreshTokenStr, err := utils.GenerateToken(user.ID.Hex(), i.config.PRIVATE_REFRESH_KEY, 60)
 	if err != nil {
 		return model.LoginResponse{}, errors.New("something bad happened")
 	}
 	if err := i.redis.Set(context.Background(), refreshTokenStr, user.ID.Hex(), 60*time.Minute); err != nil {
-		fmt.Sprintln("set otp :", err)
 		return model.LoginResponse{}, errors.New("something bad happened")
 	}
 	res := model.LoginResponse{

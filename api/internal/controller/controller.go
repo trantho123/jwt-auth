@@ -4,6 +4,7 @@ import (
 	"Jwtwithecdsa/api/internal/model"
 	"Jwtwithecdsa/api/internal/rds"
 	"Jwtwithecdsa/api/internal/repository"
+	"Jwtwithecdsa/api/internal/utils"
 )
 
 type Controller interface {
@@ -15,12 +16,15 @@ type Controller interface {
 	GetMe(userid string) (model.UserResponse, error)
 }
 type impl struct {
-	redis rds.RedisService
-	repo  repository.Registry
+	redis  rds.RedisService
+	repo   repository.Registry
+	config utils.Config
 }
 
-func New(repo repository.Registry, rds rds.RedisService) Controller {
+func New(repo repository.Registry, rds rds.RedisService, config utils.Config) Controller {
 	return impl{
-		repo:  repo,
-		redis: rds}
+		repo:   repo,
+		redis:  rds,
+		config: config,
+	}
 }

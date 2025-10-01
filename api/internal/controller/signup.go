@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -52,7 +51,7 @@ func (i impl) SighUp(signUpInput *model.SignUpInput) error {
 		return errors.New("something bad happened")
 	}
 	id := user.ID.Hex()
-	url := fmt.Sprintf("%s/signup/verify/%s/%s", os.Getenv("CLIENT_ORIGIN"), id, newUser.VerificationCode)
+	url := fmt.Sprintf("%s/signup/verify/%s/%s", i.config.CLIENT_ORIGIN, id, newUser.VerificationCode)
 	emailData := utils.EmailData{
 		URL:     url,
 		Subject: "Your account verification code",
@@ -61,7 +60,7 @@ func (i impl) SighUp(signUpInput *model.SignUpInput) error {
 		Please <a href="%s">click here</a> to verify your email address.<br/>
 		`, newUser.Username, url),
 	}
-	sendEmailErr := utils.SendEmail(&user, &emailData)
+	sendEmailErr := utils.SendEmail(&user, &emailData, i.config)
 	if sendEmailErr != nil {
 		return errors.New("failed to send email")
 	}

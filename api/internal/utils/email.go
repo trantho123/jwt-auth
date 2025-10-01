@@ -4,7 +4,6 @@ import (
 	"Jwtwithecdsa/api/internal/model"
 	"errors"
 	"math/rand"
-	"os"
 	"regexp"
 	"strings"
 
@@ -19,14 +18,14 @@ type EmailData struct {
 	Content string
 }
 
-func SendEmail(user *model.User, emailData *EmailData) error {
+func SendEmail(user *model.User, emailData *EmailData, config Config) error {
 
 	email := gomail.NewMessage()
-	email.SetHeader("From", os.Getenv("EMAIL_FROM"))
+	email.SetHeader("From", config.EMAIL_FROM)
 	email.SetHeader("To", user.Email)
 	email.SetHeader("Subject", emailData.Subject)
 	email.SetBody("text/html", emailData.Content)
-	d := gomail.NewDialer(os.Getenv("SMTP_HOST"), 587, os.Getenv("SMTP_USER"), os.Getenv("SMTP_PASS"))
+	d := gomail.NewDialer(config.SMTP_HOST, 587, config.SMTP_USER, config.SMTP_PASS)
 	if err := d.DialAndSend(email); err != nil {
 		return err
 	}

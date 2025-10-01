@@ -18,7 +18,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal("Faild to load env file: ", err)
 	}
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(config.MONGO_SERVER))
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		log.Fatal("Failed to connect: ", err)
 	}
